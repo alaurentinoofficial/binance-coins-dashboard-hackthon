@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
+  "dependencies": {
+    "@binance/connector": "^2.0.0-rc.3",
+    "kafkajs": "^2.2.2"
+  }
+}
