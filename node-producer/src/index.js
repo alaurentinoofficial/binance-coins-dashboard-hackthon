@@ -2,8 +2,8 @@ const { Spot } = require('@binance/connector')
 const { Kafka, CompressionTypes, logLevel } = require("kafkajs")
 
 const clientId = "binance-app"
-const brokers = ["apache-kafka-broker:9092"]
-const topic = "message-log"
+const brokers = ["kafka:9091"]
+const topic = "binance_btc_price"
 
 const kafka = new Kafka({ 
   logLevel: logLevel.DEBUG,
@@ -23,7 +23,7 @@ const callbacks = {
   message: async (data) => {
     try {
       let messageData = {
-        value: JSON.stringify(data),
+        value: JSON.stringify(JSON.parse(data)["data"]),
       };
 
       client.logger.log(messageData)
@@ -38,10 +38,11 @@ const callbacks = {
   }
 }
 
-const aggTrade = client.aggTradeWS('bnbusdt', callbacks)
+// const aggTrade = client.aggTradeWS('bnbusdt', callbacks)
 
 // support combined stream
-const combinedStreams = client.combinedStreams(['btcusdt@miniTicker', 'ethusdt@ticker'], callbacks);
+// const combinedStreams = client.combinedStreams(['btcusdt@ticker', 'ethusdt@ticker'], callbacks);
+const combinedStreams = client.combinedStreams(['btcusdt@ticker'], callbacks);
 
 (async function () {
   await producer.connect()

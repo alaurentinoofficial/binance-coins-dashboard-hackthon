@@ -1,26 +1,22 @@
-version: '1'
+version: '3'
 services:
   node-producer:
     extends:
       file: ./node-producer/docker-compose.yaml
       service: node-producer
     depends_on:
-      apache-kafka-broker:
+      kafka:
         condition: service_healthy
-    networks:
-      - kafka
 
   node-consumer:
     extends:
       file: ./node-consumer/docker-compose.yaml
       service: node-consumer
     depends_on:
-      apache-kafka-broker:
+      kafka:
         condition: service_healthy
-    networks:
-      - kafka
   
-  apache-kafka-zookeeper:
+  zookeeper:
     extends:
       file: ./apache-kafka/docker-compose.yaml
       service: zookeeper
@@ -28,35 +24,79 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     healthcheck:
-      test: ["CMD", "nc", "-vz", "apache-kafka-zookeeper", "2181"]
+      test: ["CMD", "nc", "-vz", "zookeeper", "2181"]
       interval: 10s
       timeout: 10s
       retries: 5
-    networks:
-      - kafka
   
-  apache-kafka-broker:
+  kafka:
     depends_on:
-      apache-kafka-zookeeper:
+      zookeeper:
         condition: service_healthy
     extends:
       file: ./apache-kafka/docker-compose.yaml
       service: kafka
-    networks:
-      - kafka
+    ports: [19091:19091]
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: apache-kafka-zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://apache-kafka-broker:9092,PLAINTEXT_HOST://apache-kafka-zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9091,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:19091
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_EXTERNAL
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     healthcheck:
-      test: ["CMD", "nc", "-vz", "apache-kafka-broker", "9092"]
+      test: ["CMD", "nc", "-vz", "kafka", "9091"]
       interval: 10s
       timeout: 10s
       retries: 5
 
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    depends_on:
+      - kafka
+    ports:
+      - 19000:9000
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9091
+  
+  pinot-controller:
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    extends:
+      file: ./apache-pinot/docker-compose.yaml
+      service: pinot-controller
+    command: "StartController -zkAddress zookeeper:2181"
+    # container_name: pinot-controller
+    restart: unless-stopped
+    ports: ["9000:9000"]
+    environment:
+      CLUSTER_NAME: "asdf"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
+    
+  pinot-broker:
+    depends_on: [pinot-controller]
+    extends:
+      file: ./apache-pinot/docker-compose.yaml
+      service: pinot-broker
+    command: "StartBroker -zkAddress zookeeper:2181"
+    restart: unless-stopped
+    # container_name: "pinot-broker"
+    ports: ["8099:8099"]
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
+    
+  pinot-server:
+    depends_on: [pinot-broker]
+    extends:
+      file: ./apache-pinot/docker-compose.yaml
+      service: pinot-server
+    command: "StartServer -zkAddress zookeeper:2181"
+    restart: unless-stopped
+    # container_name: "pinot-server"
+    ports: ["8098:8098"]
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx16G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log"
 
 networks:
   kafka:

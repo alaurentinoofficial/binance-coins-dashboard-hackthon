@@ -1,0 +1,59 @@
+{
+  "schemaName": "binance_btc_price",
+  "dimensionFieldSpecs": [
+    {
+      "name": "e",
+      "dataType": "STRING",
+      "singleValueField": true
+    },
+    {
+      "name": "s",
+      "dataType": "STRING",
+      "singleValueField": true
+    },
+    {
+      "name": "m",
+      "dataType": "BOOLEAN",
+      "singleValueField": true
+    },
+    {
+      "name": "M",
+      "dataType": "BOOLEAN",
+      "singleValueField": true
+    }
+  ],
+  "metricFieldSpecs": [
+    {
+      "name": "a",
+      "dataType": "LONG"
+    },
+    {
+      "name": "p",
+      "dataType": "FLOAT"
+    },
+    {
+      "name": "q",
+      "dataType": "FLOAT"
+    },
+    {
+      "name": "f",
+      "dataType": "LONG"
+    },
+    {
+      "name": "l",
+      "dataType": "LONG"
+    },
+    {
+      "name": "T",
+      "dataType": "LONG"
+    }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "E",
+      "dataType": "LONG",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:SECONDS"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+version: '3'
+services:
+  pinot-controller:
+    image: apachepinot/pinot:0.9.3
+    command: "StartController -zkAddress zookeeper:2181"
+  
+  pinot-broker:
+    image: apachepinot/pinot:0.9.3
+    command: "StartBroker -zkAddress zookeeper:2181"
+    restart: unless-stopped
+
+  pinot-server:
+    image: apachepinot/pinot:0.9.3
+    command: "StartServer -zkAddress zookeeper:2181"
+    restart: unless-stopped

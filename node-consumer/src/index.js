@@ -1,8 +1,8 @@
 const { Kafka, CompressionTypes, logLevel } = require("kafkajs")
 
 const clientId = "binance-app"
-const brokers = ["apache-kafka-broker:9092"]
-const topic = "message-log"
+const brokers = ["kafka:9091"]
+const topic = "binance_btc_price"
 
 const kafka = new Kafka({ 
   logLevel: logLevel.DEBUG,
@@ -17,12 +17,7 @@ const run = async () => {
   await consumer.subscribe({ topic, fromBeginning: true })
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      console.log({
-        consumerMessage: true,
-        topic,
-        partition,
-        message
-      })
+      console.log(message)
     },
   })
 };
