@@ -35,12 +35,13 @@ io.on('connection', (socket) => {
     axios.post("http://pinot-broker:8099/query/sql", query)
         .then(r => r.data)
         .then(body => {
-            let cols = body.resultTable.dataSchema.columnNames
-            return body.resultTable.rows.map(row =>
-                row.reduce((a, v, i) => ({ ...a, [cols[i]]: v}), {}) 
-            )
+                let cols = body.resultTable.dataSchema.columnNames
+                return body.resultTable.rows.map(row =>
+                    row.reduce((a, v, i) => ({ ...a, [cols[i]]: v}), {}) 
+                );
         })
         .then(body => body.forEach(x => socket.emit("agg-trade", x)))
+        .catch(e => console.log(e))
 });
 
 
@@ -52,21 +53,6 @@ io.on('disconnection', (socket) => {
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve() + '/index.html');
-});
-
-app.get('/agg-trade/latest', (req, res) => {
-    let query = {"sql":"select * from aggregated_coins_price order by partitionTs desc limit 50"};
-    
-    axios.post("http://pinot-broker:8099/query/sql", query)
-        .then(r => r.data)
-        .then(body => {
-            let cols = body.resultTable.dataSchema.columnNames
-            return body.resultTable.rows.map(row =>
-                row.reduce((a, v, i) => ({ ...a, [cols[i]]: v}), {}) 
-            )
-        })
-        .then(body => res.status(200).json(body))
-        .catch(e => res.status(500).json(e))
 });
 
 server.listen(3000, () => {
