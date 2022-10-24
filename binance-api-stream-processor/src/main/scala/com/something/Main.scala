@@ -56,8 +56,6 @@ object Main extends App {
     .window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
     .apply(new AggregateTradesByWindow)
 
-  transformStream.
-
   transformStream
     .map(new Gson().toJson(_))
     .sinkTo(sink)
