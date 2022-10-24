@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package conditions;
+
+service Conditions {
+  rpc Get (VoidRequest) returns (repeated ConditionsReply) {}
+}
+
+void VoidRequest {
+}
+
+message ConditionsReply {
+  string id = 1;
+  string type = 2;
+  string condition = 3;
+  string price = 4;
+  string asset = 5;
+  string webhook = 6;
+}

@@ -1,32 +1,16 @@
-// const { Kafka, CompressionTypes, logLevel } = require("kafkajs")
-
-// const clientId = "binance-app"
-// const brokers = ["kafka:9091"]
-// const topic = "binance_btc_price"
-
-// const kafka = new Kafka({ 
-//   // logLevel: logLevel.DEBUG,
-//   clientId, 
-//   brokers 
-// })
-
-// const consumer = kafka.consumer({ groupId: 'test-group' });
-
-// const run = async () => {
-//   await consumer.connect()
-//   await consumer.subscribe({ topic, fromBeginning: true })
-//   await consumer.run({
-//     eachMessage: async ({ topic, partition, message }) => {
-//       console.log('HEY: ' + Buffer.from(JSON.parse(JSON.stringify(message)).value.data).toString())
-//     },
-//   })
-// };
-
-// run().catch(e => console.error(`[example/consumer] ${e.message}`, e))
-
 import fromKafkaTopic from 'rxjs-kafka';
-import { of, first } from 'rxjs';
 import axios from 'axios';
+
+let {
+    grpc,
+    calculator,
+    PORT
+  } = require('./lib/configuration')
+  
+  let readline = require('readline');
+  
+  let rl = readline.createInterface(process.stdin, process.stdout);
+  let client = new calculator.Calculator(PORT, grpc.credentials.createInsecure());
 
 const { message$$, pushMessage$$ } = fromKafkaTopic(
     {
@@ -37,22 +21,20 @@ const { message$$, pushMessage$$ } = fromKafkaTopic(
     { groupId: 'test-group' }
 );
 
-//of('Hello KafkaJS user!').subscribe(pushMessage$$);
-//first()
-
 const types = ['Price'];
 const condition = ['Upper than'];
 
-const conditions = [{
-    id: 'Job 1',
-    type: 'Price',
-    condition: 'Upper than',
-    price: 200,
-    asset: 'BTCUSDT',
-    webhook: 'http://api-webhook-test:5001/price'
-}];
+// const conditions = [{
+//     id: 'Job 1',
+//     type: 'Price',
+//     condition: 'Upper than',
+//     price: 200,
+//     asset: 'BTCUSDT',
+//     webhook: 'http://api-webhook-test:5001/price'
+// }];
 
 const checkConditions = (obj) => {
+    const conditions = client.get();
     let condition = conditions.filter(condition => {
         if(condition.asset == obj.s) {
             if(condition.condition == 'Upper than')

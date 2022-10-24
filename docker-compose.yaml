@@ -1,5 +1,18 @@
 version: '3'
 services:
+  notification-ui:
+    extends:
+      file: ./notification-ui/docker-compose.yaml
+      service: notification-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  conditions-microsservice:
+    extends:
+      file: ./conditions-microsservice/docker-compose.yaml
+      service: conditions-microsservice
+
   node-producer:
     extends:
       file: ./node-producer/docker-compose.yaml
