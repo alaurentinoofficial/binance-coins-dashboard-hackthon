@@ -1,9 +1,16 @@
 {
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "esModuleInterop": true
+  },
+  "type": "module",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.mjs"
   },
   "dependencies": {
     "@binance/connector": "^2.0.0-rc.3",
-    "kafkajs": "^2.2.2"
+    "kafkajs": "^2.2.2",
+    "rxjs-kafka": "^1.1.0"
   }
 }
