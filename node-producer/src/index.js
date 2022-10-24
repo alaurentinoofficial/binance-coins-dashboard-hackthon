@@ -42,7 +42,8 @@ const callbacks = {
 
 // support combined stream
 // const combinedStreams = client.combinedStreams(['btcusdt@ticker', 'ethusdt@ticker'], callbacks);
-const combinedStreams = client.combinedStreams(['btcusdt@ticker'], callbacks);
+// const combinedStreams = client.combinedStreams(['btcusdt@ticker'], callbacks);
+const combinedStreams = client.combinedStreams(['btcusdt@aggTrade', 'ethusdt@aggTrade'], callbacks);
 
 (async function () {
   await producer.connect()
