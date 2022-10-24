@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/binance-api-stream-processor.iml" filepath="$PROJECT_DIR$/.idea/modules/binance-api-stream-processor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/binance-api-stream-processor-build.iml" filepath="$PROJECT_DIR$/.idea/modules/binance-api-stream-processor-build.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mainRunner.iml" filepath="$PROJECT_DIR$/.idea/modules/mainRunner.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/studing-flink.iml" filepath="$PROJECT_DIR$/.idea/modules/studing-flink.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/studing-flink-build.iml" filepath="$PROJECT_DIR$/.idea/modules/studing-flink-build.iml" />
     </modules>
   </component>
 </project>

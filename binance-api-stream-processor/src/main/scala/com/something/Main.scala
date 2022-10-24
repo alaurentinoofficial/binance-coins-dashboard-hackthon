@@ -5,7 +5,7 @@ import com.something.Models._
 import com.something.Processes.AggregateTradesByWindow
 import org.apache.flink.api.common.eventtime.{SerializableTimestampAssigner, WatermarkStrategy}
 import org.apache.flink.api.common.serialization.SimpleStringSchema
-import org.apache.flink.connector.base.DeliveryGuarantee
+import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.connector.kafka.sink.{KafkaRecordSerializationSchema, KafkaSink}
 import org.apache.flink.connector.kafka.source.KafkaSource
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer
@@ -17,10 +17,13 @@ import java.time.Duration
 
 object Main extends App {
 
-  var env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI()
+  val params = ParameterTool.fromArgs(args)
+
+  var env = StreamExecutionEnvironment.getExecutionEnvironment
+  env.getConfig.setGlobalJobParameters(params)
 
   val source = KafkaSource.builder()
-    .setBootstrapServers("localhost:19091")
+    .setBootstrapServers(params.get("kafka-brokers", "localhost:19091"))
     .setTopics("binance_btc_price")
     .setGroupId("my-group")
     .setStartingOffsets(OffsetsInitializer.latest())
@@ -28,7 +31,7 @@ object Main extends App {
     .build()
 
   val sink = KafkaSink.builder()
-    .setBootstrapServers("localhost:19091")
+    .setBootstrapServers(params.get("kafka-brokers", "localhost:19091"))
     .setRecordSerializer(KafkaRecordSerializationSchema.builder()
       .setTopic("aggregated_coins_price")
       .setValueSerializationSchema(new SimpleStringSchema())
@@ -37,7 +40,7 @@ object Main extends App {
     .build()
 
   val inputStream = env
-    .fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Souce")
+    .fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source")
     .map(new Gson().fromJson(_, classOf[BinanceTradeEvent]))
 
   val transformStream = inputStream
@@ -52,6 +55,8 @@ object Main extends App {
     .keyBy(_.s)
     .window(TumblingProcessingTimeWindows.of(Time.seconds(5)))
     .apply(new AggregateTradesByWindow)
+
+  transformStream.
 
   transformStream
     .map(new Gson().toJson(_))

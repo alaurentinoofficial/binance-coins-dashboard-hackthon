@@ -25,8 +25,6 @@ const callbacks = {
       let messageData = {
         value: JSON.stringify(JSON.parse(data)["data"]),
       };
-
-      client.logger.log(messageData)
       
 			await producer.send({
 				topic,

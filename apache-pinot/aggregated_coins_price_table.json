@@ -1,5 +1,5 @@
 {
-  "tableName": "aggregated_coins_price2",
+  "tableName": "aggregated_coins_price",
   "tableType": "REALTIME",
   "segmentsConfig": {
     "schemaName": "aggregated_coins_price",
