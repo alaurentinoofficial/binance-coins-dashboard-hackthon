@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  conditions-microsservice:
+    build: .
+    volumes:
+      - ./src:/home/node/app/src
+    ports:
+      - 3100:3100
