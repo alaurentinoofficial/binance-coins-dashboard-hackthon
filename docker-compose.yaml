@@ -15,6 +15,16 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+    
+  api-webhook-test:
+    extends:
+      file: ./api-webhook-test/docker-compose.yaml
+      service: api-webhook-test
+    ports:
+      - 5001:5001
+    depends_on:
+      kafka:
+        condition: service_healthy
   
   zookeeper:
     extends:
