@@ -34,6 +34,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports: [2181:2181]
+    volumes: 
+      - ./data/zookeeper/data:/data
+      - ./data/zookeeper/catalog:/catalog
     healthcheck:
       test: ["CMD", "nc", "-vz", "zookeeper", "2181"]
       interval: 10s
@@ -55,6 +58,8 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_EXTERNAL
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes: 
+      - ./data/kafka/1:/var/lib/kafka
     healthcheck:
       test: ["CMD", "nc", "-vz", "kafka", "9091"]
       interval: 10s

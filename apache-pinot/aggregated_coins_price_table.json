@@ -6,7 +6,7 @@
     "replication": "1",
     "timeColumnName": "partitionTs",
     "allowNullTimeValue": false,
-    "replicasPerPartition": "3"
+    "replicasPerPartition": "1"
   },
   "tenants": {
     "broker": "DefaultTenant",
