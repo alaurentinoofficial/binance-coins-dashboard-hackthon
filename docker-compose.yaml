@@ -153,3 +153,11 @@ services:
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 10
         parallelism.default: 10
+    
+  websocket:
+    extends:
+      file: ./dashboard-backend/docker-compose.yaml
+      service: node-consumer
+    ports:
+      - 3000:3000
+    depends_on: [flink-jobmanager]

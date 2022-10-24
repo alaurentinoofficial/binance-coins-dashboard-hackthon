@@ -15,7 +15,7 @@ const io = new Server(server);
 const { message$$, pushMessage$$  } = fromKafkaTopic(
     {
         clientId: 'backend-consumer',
-        brokers: ['localhost:19091']
+        brokers: ['kafka:9091']
     },
     { topic: 'aggregated_coins_price', fromBeginning: false },
     { groupId: 'backend-consumer' }
