@@ -87,7 +87,6 @@ services:
     restart: unless-stopped
     ports: ["9000:9000"]
     environment:
-      CLUSTER_NAME: "asdf"
       JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
     
   pinot-broker:
@@ -103,7 +102,7 @@ services:
       JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
     
   pinot-server:
-    depends_on: [pinot-broker]
+    depends_on: [pinot-controller, pinot-broker]
     extends:
       file: ./apache-pinot/docker-compose.yaml
       service: pinot-server
@@ -153,7 +152,7 @@ services:
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 10
         parallelism.default: 10
-    
+  
   websocket:
     extends:
       file: ./dashboard-backend/docker-compose.yaml
