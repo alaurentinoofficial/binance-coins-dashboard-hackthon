@@ -52,9 +52,9 @@ io.on('disconnection', (socket) => {
 
 
 app.get('/', (req, res) => {
-  res.sendFile(path.resolve() + '/index.html');
+  res.sendFile(path.resolve() + '/src/index.html');
 });
 
-server.listen(3000, () => {
-    console.log('listening on *:3000');
+server.listen(3002, () => {
+    console.log('listening on *:3002');
 });

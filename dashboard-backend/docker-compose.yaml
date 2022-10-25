@@ -5,3 +5,5 @@ services:
     build: .
     volumes:
       - ./src:/home/node/app/src
+    ports:
+      - 3002:3002

@@ -119,7 +119,8 @@ services:
       JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
     
   pinot-broker:
-    depends_on: [pinot-controller]
+    depends_on: 
+      - pinot-controller
     extends:
       file: ./apache-pinot/docker-compose.yaml
       service: pinot-broker
@@ -131,7 +132,9 @@ services:
       JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
     
   pinot-server:
-    depends_on: [pinot-controller, pinot-broker]
+    depends_on: 
+      - pinot-controller
+      - pinot-broker
     extends:
       file: ./apache-pinot/docker-compose.yaml
       service: pinot-server
@@ -186,6 +189,5 @@ services:
     extends:
       file: ./dashboard-backend/docker-compose.yaml
       service: node-consumer
-    ports:
-      - 3000:3000
-    depends_on: [pinot-server]
+    depends_on: 
+      - pinot-server
