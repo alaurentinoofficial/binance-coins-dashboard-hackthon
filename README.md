@@ -19,3 +19,8 @@ email_service - E-mail service for tests (Not used at now)
 node-consumer - Consumer Service, handling webhook triggers communicating with conditions microservice
 node-producer - Producer Service, handling Binance Websockets API to Kafka
 notification-ui - Notification Dashboard that controls conditions
+
+## Dashboards
+The dashboards are in the following ports:
+- Port 3002 - Visualization UI (dashboard-backend)
+- Port 3000 - Notification UI (notification-ui). If you're using Gitpod, you will need to make public the 3100 port too.

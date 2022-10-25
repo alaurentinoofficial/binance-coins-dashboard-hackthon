@@ -20,7 +20,7 @@ function App() {
     }).then(async(data) => {
       let conditionsData = await data.json();
       setConditions(conditionsData)
-      setLogs({ ...logsData, data: conditionsData[logsData.index] })
+      setLogs({ id: "", data:[], total: '10'})
     })
   }
 
@@ -108,7 +108,7 @@ function App() {
                 <ul>{logsData.data.length > 0 ? (
                   <>
                     Máximo de logs: <input type="text" value={logsData.total} onChange={(e) => setLogs({...logsData, total: e.target.value })}/>
-                    {([...logsData.data]).slice(0, Number(logsData.total)).map(data => ( 
+                    {([...logsData.data].reverse()).slice(0, Number(logsData.total)).map(data => ( 
                       <li>{JSON.stringify(data)}</li> ))}
                   </>
                   ) : (<li>Sem dados disponíveis</li>)}
