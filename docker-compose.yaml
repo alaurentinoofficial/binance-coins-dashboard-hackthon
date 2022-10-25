@@ -44,6 +44,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports: [2181:2181]
+    volumes: 
+      - ./data/zookeeper/data:/data
+      - ./data/zookeeper/catalog:/catalog
     healthcheck:
       test: ["CMD", "nc", "-vz", "zookeeper", "2181"]
       interval: 10s
@@ -65,11 +68,32 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_EXTERNAL
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes: 
+      - ./data/kafka/1:/var/lib/kafka
     healthcheck:
       test: ["CMD", "nc", "-vz", "kafka", "9091"]
       interval: 10s
       timeout: 10s
       retries: 5
+    
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:9091 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:9091 --create --if-not-exists --topic aggregated_coins_price --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:9091 --create --if-not-exists --topic binance_btc_price --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:9091 --list
+      "
 
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
@@ -87,12 +111,11 @@ services:
     extends:
       file: ./apache-pinot/docker-compose.yaml
       service: pinot-controller
-    command: "StartController -zkAddress zookeeper:2181"
+    command: "StartController -clusterName BinanceDashboard -zkAddress zookeeper:2181"
     # container_name: pinot-controller
     restart: unless-stopped
     ports: ["9000:9000"]
     environment:
-      CLUSTER_NAME: "asdf"
       JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
     
   pinot-broker:
@@ -100,7 +123,7 @@ services:
     extends:
       file: ./apache-pinot/docker-compose.yaml
       service: pinot-broker
-    command: "StartBroker -zkAddress zookeeper:2181"
+    command: "StartBroker -clusterName BinanceDashboard  -zkAddress zookeeper:2181"
     restart: unless-stopped
     # container_name: "pinot-broker"
     ports: ["8099:8099"]
@@ -108,11 +131,11 @@ services:
       JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
     
   pinot-server:
-    depends_on: [pinot-broker]
+    depends_on: [pinot-controller, pinot-broker]
     extends:
       file: ./apache-pinot/docker-compose.yaml
       service: pinot-server
-    command: "StartServer -zkAddress zookeeper:2181"
+    command: "StartServer -clusterName BinanceDashboard  -zkAddress zookeeper:2181"
     restart: unless-stopped
     # container_name: "pinot-server"
     ports: ["8098:8098"]
@@ -158,3 +181,11 @@ services:
         jobmanager.rpc.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 10
         parallelism.default: 10
+  
+  websocket:
+    extends:
+      file: ./dashboard-backend/docker-compose.yaml
+      service: node-consumer
+    ports:
+      - 3000:3000
+    depends_on: [pinot-server]
