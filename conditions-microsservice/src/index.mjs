@@ -7,21 +7,24 @@ app.use(cors({
     origin: '*'
 }))
 
-let conditionsStorage = [{
-    id: 'Job 1',
-    type: 'Price',
-    condition: 'Upper than',
-    price: 200,
-    asset: 'BTCUSDT',
-    webhook: 'http://api-webhook-test:5001/price'
-}];
+let conditionsStorage = {
+    'JOB 1': {
+        id: 'Job 1',
+        type: 'Price',
+        condition: 'Upper than',
+        price: 200,
+        asset: 'BTCUSDT',
+        webhook: 'http://api-webhook-test:5001/price',
+        logs: []
+    }
+};
 
 app.get('/', (req, res) => {
-    res.send(conditionsStorage)
+    res.send(Object.values(conditionsStorage))
 })
 
 app.post('/', (req, res) => {
-    const {
+    let {
         id,
         type,
         condition,
@@ -34,13 +37,32 @@ app.post('/', (req, res) => {
         id,
         type,
         condition,
-        price,
+        price: Number(price),
         asset,
         webhook,
+        logs: []
     };
 
-    conditionsStorage.push(data)
+    id = String(id).toUpperCase()
+    conditionsStorage[id] = (data)
     res.send(data)
+})
+
+
+app.post('/log', (req, res) => {
+    let {
+        id,
+        data
+    } = req.body;
+
+    let information = {
+        id,
+        data
+    };
+
+    id = String(id).toUpperCase()
+    conditionsStorage[id].logs.push(information)
+    res.send(information)
 })
 
 app.listen(3100, () => {
