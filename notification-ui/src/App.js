@@ -18,7 +18,9 @@ function App() {
         'Content-type': 'application/json'
       }
     }).then(async(data) => {
-      setConditions(await data.json())
+      let conditionsData = await data.json();
+      setConditions(conditionsData)
+      setLogs({ id: "", data:[], total: '10'})
     })
   }
 
@@ -62,7 +64,7 @@ function App() {
                 asset,
                 webhook,
                 logs
-              }) => (
+              }, index) => (
                 <tr>
                   <td>{id}</td>
                   <td>{type}</td>
@@ -70,7 +72,7 @@ function App() {
                   <td>{price}</td>
                   <td>{asset}</td>
                   <td>{webhook}</td>
-                  <td><input type="button"  value="Ver logs" onClick={() => {setLogs({ ...logsData, total: 10, id, data: logs })}} /></td>
+                  <td><input type="button"  value="Ver logs" onClick={() => {setLogs({ ...logsData, index, total: 10, id, data: logs })}} /></td>
                 </tr>
               ))}
               <tr>

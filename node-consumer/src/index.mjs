@@ -71,7 +71,7 @@ const checkConditions = (obj) => {
                         obj,
                         success: true,
                         executing: false,
-                        response
+                        response: response.data
                     })
                 })
                 .catch(function (error) {
@@ -82,7 +82,7 @@ const checkConditions = (obj) => {
                         obj,
                         success: false,
                         executing: false,
-                        error
+                        error: error.message
                     })
                 });
         });

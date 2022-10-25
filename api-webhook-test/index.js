@@ -8,7 +8,7 @@ var jsonParser = bodyParser.json()
 
 app.post('/price', jsonParser, (req, res) => {
     console.log('Got body:', req.body);
-    res.status(201).send('Rota POST!');
+    res.send({ received: req.body, webhook: "This is the webhook response"  });
 });
 
 app.use(express.json());
