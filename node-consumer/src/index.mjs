@@ -82,7 +82,7 @@ const checkConditions = (obj) => {
                         obj,
                         success: false,
                         executing: false,
-                        error
+                        error: error.message
                     })
                 });
         });

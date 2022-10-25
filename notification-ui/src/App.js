@@ -18,7 +18,9 @@ function App() {
         'Content-type': 'application/json'
       }
     }).then(async(data) => {
-      setConditions(await data.json())
+      let conditionsData = await data.json();
+      setConditions(conditionsData)
+      setLogs({ ...logsData, data: conditionsData[logsData.index] })
     })
   }
 
@@ -62,7 +64,7 @@ function App() {
                 asset,
                 webhook,
                 logs
-              }) => (
+              }, index) => (
                 <tr>
                   <td>{id}</td>
                   <td>{type}</td>
@@ -70,7 +72,7 @@ function App() {
                   <td>{price}</td>
                   <td>{asset}</td>
                   <td>{webhook}</td>
-                  <td><input type="button"  value="Ver logs" onClick={() => {setLogs({ ...logsData, total: 10, id, data: logs })}} /></td>
+                  <td><input type="button"  value="Ver logs" onClick={() => {setLogs({ ...logsData, index, total: 10, id, data: logs })}} /></td>
                 </tr>
               ))}
               <tr>
@@ -106,7 +108,7 @@ function App() {
                 <ul>{logsData.data.length > 0 ? (
                   <>
                     Máximo de logs: <input type="text" value={logsData.total} onChange={(e) => setLogs({...logsData, total: e.target.value })}/>
-                    {([...logsData.data].reverse()).slice(0, Number(logsData.total)).map(data => ( 
+                    {([...logsData.data]).slice(0, Number(logsData.total)).map(data => ( 
                       <li>{JSON.stringify(data)}</li> ))}
                   </>
                   ) : (<li>Sem dados disponíveis</li>)}
