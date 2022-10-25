@@ -10,151 +10,151 @@ services:
       file: ./conditions-microsservice/docker-compose.yaml
       service: conditions-microsservice
   
-  # node-producer:
-  #   extends:
-  #     file: ./node-producer/docker-compose.yaml
-  #     service: node-producer
-  #   depends_on:
-  #     kafka:
-  #       condition: service_healthy
+  node-producer:
+    extends:
+      file: ./node-producer/docker-compose.yaml
+      service: node-producer
+    depends_on:
+      kafka:
+        condition: service_healthy
 
-  # node-consumer:
-  #   extends:
-  #     file: ./node-consumer/docker-compose.yaml
-  #     service: node-consumer
-  #   depends_on:
-  #     kafka:
-  #       condition: service_healthy
+  node-consumer:
+    extends:
+      file: ./node-consumer/docker-compose.yaml
+      service: node-consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
     
-  # api-webhook-test:
-  #   extends:
-  #     file: ./api-webhook-test/docker-compose.yaml
-  #     service: api-webhook-test
-  #   ports:
-  #     - 5001:5001
-  #   depends_on:
-  #     kafka:
-  #       condition: service_healthy
+  api-webhook-test:
+    extends:
+      file: ./api-webhook-test/docker-compose.yaml
+      service: api-webhook-test
+    ports:
+      - 5001:5001
+    depends_on:
+      kafka:
+        condition: service_healthy
   
-  # zookeeper:
-  #   extends:
-  #     file: ./apache-kafka/docker-compose.yaml
-  #     service: zookeeper
-  #   environment:
-  #     ZOOKEEPER_CLIENT_PORT: 2181
-  #     ZOOKEEPER_TICK_TIME: 2000
-  #   ports: [2181:2181]
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-vz", "zookeeper", "2181"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 5
+  zookeeper:
+    extends:
+      file: ./apache-kafka/docker-compose.yaml
+      service: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports: [2181:2181]
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "zookeeper", "2181"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
   
-  # kafka:
-  #   depends_on:
-  #     zookeeper:
-  #       condition: service_healthy
-  #   extends:
-  #     file: ./apache-kafka/docker-compose.yaml
-  #     service: kafka
-  #   ports: [19091:19091]
-  #   environment:
-  #     KAFKA_BROKER_ID: 1
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #     KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9091,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:19091
-  #     KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_EXTERNAL
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-vz", "kafka", "9091"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 5
+  kafka:
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    extends:
+      file: ./apache-kafka/docker-compose.yaml
+      service: kafka
+    ports: [19091:19091]
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka:9091,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:19091
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_EXTERNAL
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "kafka", "9091"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
-  # kafdrop:
-  #   image: obsidiandynamics/kafdrop:latest
-  #   depends_on:
-  #     - kafka
-  #   ports:
-  #     - 19000:9000
-  #   environment:
-  #     KAFKA_BROKERCONNECT: kafka:9091
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    depends_on:
+      - kafka
+    ports:
+      - 19000:9000
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9091
   
-  # pinot-controller:
-  #   depends_on:
-  #     zookeeper:
-  #       condition: service_healthy
-  #   extends:
-  #     file: ./apache-pinot/docker-compose.yaml
-  #     service: pinot-controller
-  #   command: "StartController -zkAddress zookeeper:2181"
-  #   # container_name: pinot-controller
-  #   restart: unless-stopped
-  #   ports: ["9000:9000"]
-  #   environment:
-  #     CLUSTER_NAME: "asdf"
-  #     JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
+  pinot-controller:
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    extends:
+      file: ./apache-pinot/docker-compose.yaml
+      service: pinot-controller
+    command: "StartController -zkAddress zookeeper:2181"
+    # container_name: pinot-controller
+    restart: unless-stopped
+    ports: ["9000:9000"]
+    environment:
+      CLUSTER_NAME: "asdf"
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms1G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-controller.log"
     
-  # pinot-broker:
-  #   depends_on: [pinot-controller]
-  #   extends:
-  #     file: ./apache-pinot/docker-compose.yaml
-  #     service: pinot-broker
-  #   command: "StartBroker -zkAddress zookeeper:2181"
-  #   restart: unless-stopped
-  #   # container_name: "pinot-broker"
-  #   ports: ["8099:8099"]
-  #   environment:
-  #     JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
+  pinot-broker:
+    depends_on: [pinot-controller]
+    extends:
+      file: ./apache-pinot/docker-compose.yaml
+      service: pinot-broker
+    command: "StartBroker -zkAddress zookeeper:2181"
+    restart: unless-stopped
+    # container_name: "pinot-broker"
+    ports: ["8099:8099"]
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx4G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-broker.log"
     
-  # pinot-server:
-  #   depends_on: [pinot-broker]
-  #   extends:
-  #     file: ./apache-pinot/docker-compose.yaml
-  #     service: pinot-server
-  #   command: "StartServer -zkAddress zookeeper:2181"
-  #   restart: unless-stopped
-  #   # container_name: "pinot-server"
-  #   ports: ["8098:8098"]
-  #   environment:
-  #     JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx16G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log"
+  pinot-server:
+    depends_on: [pinot-broker]
+    extends:
+      file: ./apache-pinot/docker-compose.yaml
+      service: pinot-server
+    command: "StartServer -zkAddress zookeeper:2181"
+    restart: unless-stopped
+    # container_name: "pinot-server"
+    ports: ["8098:8098"]
+    environment:
+      JAVA_OPTS: "-Dplugins.dir=/opt/pinot/plugins -Xms4G -Xmx16G -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Xloggc:gc-pinot-server.log"
 
-  # flink-jobmanager:
-  #   depends_on: [kafka]
-  #   build: ./binance-api-stream-processor
-  #   ports:
-  #     - "8081:8081"
-  #   command: standalone-job --job-classname com.something.Main --kafka-brokers kafka:9091
-  #   deploy:
-  #     resources:
-  #         limits:
-  #           cpus: '0.5'
-  #           memory: 1g
-  #   environment:
-  #     - |
-  #       FLINK_PROPERTIES=
-  #       jobmanager.rpc.address: flink-jobmanager
-  #       parallelism.default: 10
-  #   healthcheck:
-  #     test: ["CMD", "nc", "-vz", "flink-jobmanager", "8081"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 5
+  flink-jobmanager:
+    depends_on: [kafka]
+    build: ./binance-api-stream-processor
+    ports:
+      - "8081:8081"
+    command: standalone-job --job-classname com.something.Main --kafka-brokers kafka:9091
+    deploy:
+      resources:
+          limits:
+            cpus: '0.5'
+            memory: 1g
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        parallelism.default: 10
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "flink-jobmanager", "8081"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
-  # flink-taskmanager:
-  #   depends_on:
-  #     - flink-jobmanager
-  #   build: ./binance-api-stream-processor
-  #   command: taskmanager
-  #   scale: 1
-  #   deploy:
-  #     resources:
-  #         limits:
-  #           cpus: '1'
-  #           memory: 1.5g
-  #   environment:
-  #     - |
-  #       FLINK_PROPERTIES=
-  #       jobmanager.rpc.address: flink-jobmanager
-  #       taskmanager.numberOfTaskSlots: 10
-  #       parallelism.default: 10
+  flink-taskmanager:
+    depends_on:
+      - flink-jobmanager
+    build: ./binance-api-stream-processor
+    command: taskmanager
+    scale: 1
+    deploy:
+      resources:
+          limits:
+            cpus: '1'
+            memory: 1.5g
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 10
+        parallelism.default: 10
