@@ -91,6 +91,61 @@
       }
 
     </style>
+    
+    <script>
+      window.onload = () => {
+        let dataItens = {};
+
+        var socket = io();
+
+        socket.on('agg-trade', function(data) {
+          if(!dataItens[data.symbol]) {
+            dataItens[data.symbol] = {
+              xValues: [],
+              yValues: [],
+              count: 0
+            };
+
+            let canvasDiv = document.createElement('div');
+            canvasDiv.className = "canvaGraph"
+
+            let canvasElement = document.createElement('canvas')
+            canvasElement.id = data.symbol;
+
+            let textElement = document.createElement('h4')
+            textElement.innerHTML = data.symbol
+
+            canvasDiv.appendChild(textElement)
+            canvasDiv.appendChild(canvasElement)
+
+            document.getElementById('canvasContainer').appendChild(canvasDiv);
+          }
+
+          dataItens[data.symbol].count++;
+          dataItens[data.symbol].yValues.push(data.price)
+          dataItens[data.symbol].xValues.push(dataItens[data.symbol].count)
+          
+          document.getElementById('messages').innerHTML += '<div class="message">' + (data.symbol + ' - ' + data.price) + '</div>';
+
+          new Chart(data.symbol, {
+            type: "line",
+            data: {
+              labels: dataItens[data.symbol].xValues,
+              datasets: [{
+                fill: false,
+                lineTension: 0,
+                backgroundColor: "rgba(0,0,255,1.0)",
+                borderColor: "rgba(0,0,255,0.1)",
+                data: dataItens[data.symbol].yValues
+              }]
+            },
+            options: {
+              legend: {display: false},
+            }
+          });
+        });
+      }
+    </script>
   </head>
   <body>
     <div class="app">
@@ -100,58 +155,6 @@
       <div class="content">
           <div id="canvasContainer"></div>
           <div id="messages"></div>
-          <script>
-            let dataItens = {};
-
-            var socket = io();
-
-            socket.on('agg-trade', function(data) {
-              if(!dataItens[data.symbol]) {
-                dataItens[data.symbol] = {
-                  xValues: [],
-                  yValues: [],
-                  count: 0
-                };
-
-                let canvasDiv = document.createElement('div');
-                canvasDiv.className = "canvaGraph"
-
-                let canvasElement = document.createElement('canvas')
-                canvasElement.id = data.symbol;
-
-                let textElement = document.createElement('h4')
-                textElement.innerHTML = data.symbol
-
-                canvasDiv.appendChild(textElement)
-                canvasDiv.appendChild(canvasElement)
-
-                document.getElementById('canvasContainer').appendChild(canvasDiv);
-              }
-
-              dataItens[data.symbol].count++;
-              dataItens[data.symbol].yValues.push(data.price)
-              dataItens[data.symbol].xValues.push(dataItens[data.symbol].count)
-              
-              document.getElementById('messages').innerHTML += '<div class="message">' + (data.symbol + ' - ' + data.price) + '</div>';
-
-              new Chart(data.symbol, {
-                type: "line",
-                data: {
-                  labels: dataItens[data.symbol].xValues,
-                  datasets: [{
-                    fill: false,
-                    lineTension: 0,
-                    backgroundColor: "rgba(0,0,255,1.0)",
-                    borderColor: "rgba(0,0,255,0.1)",
-                    data: dataItens[data.symbol].yValues
-                  }]
-                },
-                options: {
-                  legend: {display: false},
-                }
-              });
-            });
-          </script>
         </div>
       </div>
   </body>

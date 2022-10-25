@@ -5,6 +5,7 @@ import './App.css';
 function App() {
   const [conditions, setConditions] = useState([]);
   const [form, setForm] = useState({});
+  const [logsData, setLogs] = useState({ id: "", data:[], total: '10'});
 
   useEffect(() => {
     readAll()
@@ -41,6 +42,7 @@ function App() {
       </header>
       <div className="content">
         <div className="card">
+          <input type="button" onClick={() => readAll()} value="Atualizar" />
           <table className="table">
             <tbody>
               <tr>
@@ -59,6 +61,7 @@ function App() {
                 price,
                 asset,
                 webhook,
+                logs
               }) => (
                 <tr>
                   <td>{id}</td>
@@ -67,8 +70,7 @@ function App() {
                   <td>{price}</td>
                   <td>{asset}</td>
                   <td>{webhook}</td>
-                  <td></td>
-                  {/* <td><input type="button"  value="Excluir" /></td> */}
+                  <td><input type="button"  value="Ver logs" onClick={() => {setLogs({ ...logsData, total: 10, id, data: logs })}} /></td>
                 </tr>
               ))}
               <tr>
@@ -76,28 +78,39 @@ function App() {
                 <td>
                   <select required onChange={(e) => setForm({ ...form, type: e.target.value })} placeholder="Type">
                     <option value="" disabled selected>Selecione o Tipo</option>
-                    <option>Preço</option>
+                    <option value="price">Preço</option>
                   </select>
                 </td>
                 <td>
                   <select required  onChange={(e) => setForm({ ...form, condition: e.target.value })} placeholder="Condition">
                     <option value="" disabled selected>Selecione a Condição</option>
-                    <option>Maior que</option>
+                    <option value="Upper than">Maior que</option>
                   </select>
                 </td>
                 <td><input required  className="textInput" onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Preço" type="text" /></td>
                 <td>
                   <select required onChange={(e) => setForm({ ...form, asset: e.target.value })} placeholder="Asset">
                     <option value="" disabled selected>Selecione o ativo</option>
-                    <option>BTCUSDT</option>
-                    <option>ETHUSDT</option>
+                    <option value="BTCUSDT">BTCUSDT</option>
+                    <option value="ETHUSDT">ETHUSDT</option>
                   </select>
                 </td>
                 <td><input required  className="textInput" onChange={(e) => setForm({ ...form, webhook: e.target.value })} placeholder="Webhook" type="text" /></td>
-                <td><input type="button" value="Criar" onClick={() => create()}/></td>
+                <td><input type="button" value="Criar / Modificar" onClick={() => create()}/></td>
               </tr>
             </tbody>
           </table>
+        </div>
+        <div className="card">
+                <b>{logsData.id || "Não definido"}</b>
+                <ul>{logsData.data.length > 0 ? (
+                  <>
+                    Máximo de logs: <input type="text" value={logsData.total} onChange={(e) => setLogs({...logsData, total: e.target.value })}/>
+                    {([...logsData.data].reverse()).slice(0, Number(logsData.total)).map(data => ( 
+                      <li>{JSON.stringify(data)}</li> ))}
+                  </>
+                  ) : (<li>Sem dados disponíveis</li>)}
+                </ul>
         </div>
       </div>
     </div>
