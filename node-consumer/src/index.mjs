@@ -27,7 +27,7 @@
 import fromKafkaTopic from 'rxjs-kafka';
 import { of, first } from 'rxjs';
 import axios from 'axios';
-
+//import  sendUpdateEmail  from "../../email_service/email_service"
 const { message$$, pushMessage$$ } = fromKafkaTopic(
     {
         clientId: 'binance-app',
