@@ -2,61 +2,157 @@
 <html>
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/7.5.7/rxjs.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <title>Socket.IO chat</title>
+    <title>Graphic Dashboard</title>
     <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
 
-      #chat-form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-      #chat-input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-      #chat-input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+      code {
+        font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+          monospace;
+      }
 
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
+      body, html{
+        padding: 0;
+        margin: 0;
+        background: rgb(240, 240, 240);
+      }
+
+      .header{
+        padding: 15px;
+        background: rgb(40, 40, 40);
+        color: white;
+        box-shadow: 0 0 7px rgba(0,0,0,0.3);
+      }
+
+      .content{
+        padding: 40px;
+        box-sizing: border-box;
+      }
+
+      .card{
+        background: rgb(255, 255, 255);
+        margin: 5px;
+        border-radius: 5px;
+        border: 1px solid rgb(100, 100, 100);
+        box-sizing: border-box;
+      }
+
+      .table{
+        width: 100%;
+        text-align: left;
+        border-collapse: collapse;
+        box-sizing: border-box;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .table th, .table td{
+        padding: 5px;
+        border: 1px solid rgb(100, 100, 100)
+      }
+
+      .textInput{
+        border: none;
+        border-bottom: 2px solid rgb(40, 40, 40);
+        background: rgb(240, 240, 240);
+        width: 100%;
+        box-sizing: border-box;
+        padding: 5px;
+      }
+
+      #messages { border: 1px solid black; padding: 15px; height: 300px; overflow: scroll; margin: 10px; }
+      .message{ border: 1px solid black; padding: 5px; }
+      
+      canvas{
+        width: 100%;
+        height: 200px;
+        border: none;
+      }
+
+      .canvaGraph{
+        margin: 10px;
+        border: 1px solid black;  
+      }
+
+      #canvasContainer{
+        margin: 10px;
+        border: 1px solid black;  
+        overflow: scroll;
+        height: 700px;
+      }
+
     </style>
   </head>
   <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-    <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
-    <div id="messages"></div>
-    <script>
-      
-      var xValues = [];
-      var yValues = [];
-      let i = 0;
+    <div class="app">
+      <header class="header">
+        Dashboard UI
+      </header>
+      <div class="content">
+          <div id="canvasContainer"></div>
+          <div id="messages"></div>
+          <script>
+            let dataItens = {};
 
-      var socket = io();
+            var socket = io();
 
-      socket.on('agg-trade', function(data) {
-        if(data.symbol == "BTCUSDT"){
-          i++;
-          yValues.push(data.price)
-          xValues.push(i)
-        }
+            socket.on('agg-trade', function(data) {
+              if(!dataItens[data.symbol]) {
+                dataItens[data.symbol] = {
+                  xValues: [],
+                  yValues: [],
+                  count: 0
+                };
 
-        console.log(data)
-        
-        document.getElementById('messages').innerHTML += JSON.stringify(data);
+                let canvasDiv = document.createElement('div');
+                canvasDiv.className = "canvaGraph"
 
-        new Chart("myChart", {
-          type: "line",
-          data: {
-            labels: xValues,
-            datasets: [{
-              fill: false,
-              lineTension: 0,
-              backgroundColor: "rgba(0,0,255,1.0)",
-              borderColor: "rgba(0,0,255,0.1)",
-              data: yValues
-            }]
-          },
-          options: {
-            legend: {display: false},
-          }
-        });
-      });
-    </script>
+                let canvasElement = document.createElement('canvas')
+                canvasElement.id = data.symbol;
+
+                let textElement = document.createElement('h4')
+                textElement.innerHTML = data.symbol
+
+                canvasDiv.appendChild(textElement)
+                canvasDiv.appendChild(canvasElement)
+
+                document.getElementById('canvasContainer').appendChild(canvasDiv);
+              }
+
+              dataItens[data.symbol].count++;
+              dataItens[data.symbol].yValues.push(data.price)
+              dataItens[data.symbol].xValues.push(dataItens[data.symbol].count)
+              
+              document.getElementById('messages').innerHTML += '<div class="message">' + (data.symbol + ' - ' + data.price) + '</div>';
+
+              new Chart(data.symbol, {
+                type: "line",
+                data: {
+                  labels: dataItens[data.symbol].xValues,
+                  datasets: [{
+                    fill: false,
+                    lineTension: 0,
+                    backgroundColor: "rgba(0,0,255,1.0)",
+                    borderColor: "rgba(0,0,255,0.1)",
+                    data: dataItens[data.symbol].yValues
+                  }]
+                },
+                options: {
+                  legend: {display: false},
+                }
+              });
+            });
+          </script>
+        </div>
+      </div>
   </body>
 </html>
